@@ -1,0 +1,97 @@
+import 'package:flutter/foundation.dart';
+import 'package:baithuzakath_app/models/profile_model.dart';
+import 'package:baithuzakath_app/services/user_profile_service.dart';
+
+class UserProfileProvider extends ChangeNotifier {
+  final UserProfileService _service = UserProfileService();
+  
+  UserProfileModel? _userProfile;
+  bool _isLoading = false;
+  String? _error;
+
+
+  Future<void> fetchUserProfile(String userId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    
+    try {
+      _userProfile = await _service.getUserProfile(userId);
+      _error = null;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _userProfile = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateProfile(
+    String userId,
+    Map<String, dynamic> updateData,
+  ) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    
+    try {
+      _userProfile = await _service.updateUserProfile(userId, updateData);
+      _error = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  
+
+  
+  String? get fullAddress {
+    if (location == null) return null;
+    final parts = <String>[];
+    if (unit != null && unit!.isNotEmpty) parts.add(unit!);
+    if (area != null && area!.isNotEmpty) parts.add(area!);
+    if (district != null && district!.isNotEmpty) parts.add(district!);
+    return parts.isEmpty ? null : parts.join(', ');
+  }
+
+  bool get isProfileComplete {
+    if (_userProfile == null) return false;
+    return userName != null &&
+           userPhone != null &&
+           dateOfBirth != null &&
+           gender != null &&
+           location != null;
+  }
+
+  Future<void> refreshProfile(String userId) async {
+    await fetchUserProfile(userId);
+  }
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+=  void clear() {
+    _userProfile = null;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void updateLocalProfile(Map<String, dynamic> updates) {
+    if (_userProfile == null) return;
+    
+   =
+    notifyListeners();
+  }
+}
+
